@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react';
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 import Particles from 'react-tsparticles'
@@ -15,10 +15,12 @@ import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import 'swiper/css/effect-fade'
 import { motion } from 'framer-motion';
-
-
+import Modal from '../components/authModal'
 
 export default function Home() {
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalType, setModalType] = useState<'signin' | 'signup'>('signin');
 
   const buttonVariants = {
     initial: {
@@ -124,11 +126,8 @@ export default function Home() {
           <span className="text-indigo-400">[Placeholder]</span>
         </nav>
         <div className="flex items-center gap-4">
-          <button className="w-10 h-10 rounded-full border border-indigo-800 flex items-center justify-center text-indigo-200">
-            🌓
-          </button>
-          <Link href="/login" className="px-4 py-2 border rounded border-indigo-800 text-indigo-200 hover:bg-indigo-900">Sign In</Link>
-          <Link href="/register" className="px-4 py-2 border rounded bg-indigo-700 text-white hover:bg-indigo-800">Sign Up</Link>
+          <button onClick={() => { setModalType('signin'); setIsModalOpen(true); }} className="px-4 py-2 border rounded border-indigo-800 text-indigo-200 hover:bg-indigo-900">Sign In</button>
+          <button onClick={() => { setModalType('signup'); setIsModalOpen(true); }} className="px-4 py-2 border rounded bg-indigo-700 text-white hover:bg-indigo-800">Sign Up</button>
         </div>
       </header>
 
@@ -197,7 +196,7 @@ export default function Home() {
               href="/register"
               className="relative inline-block px-8 py-4 bg-gradient-to-r from-indigo-600 via-indigo-700 to-indigo-800 text-white rounded-lg text-lg font-semibold shadow-lg group-hover:shadow-2xl transition-all overflow-hidden"
             >
-              <span className="relative z-10">Get Started</span>
+              <span onClick={() => { setModalType('signup'); setIsModalOpen(true); }} className="relative z-10">Get Started</span>
 
               {/* ✨ Shine effect au hover uniquement ✨ */}
               <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-out"></span>
@@ -353,6 +352,7 @@ export default function Home() {
           © 2025 CS2 Trader Companion
         </div>
       </footer>
+      {isModalOpen && <Modal type={modalType} onClose={() => setIsModalOpen(false)} />}
     </main>
   )
 }
