@@ -1,21 +1,28 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { createPortal } from 'react-dom';
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { createPortal } from "react-dom";
+import { supabase } from "../lib/supabaseClient";
 
-export default function Modal({ type = 'signin', onClose }: { type?: 'signin' | 'signup'; onClose: () => void }) {
-  const [activeTab, setActiveTab] = useState<'signin' | 'signup'>(type);
+export default function Modal({
+  type = "signin",
+  onClose,
+}: {
+  type?: "signin" | "signup";
+  onClose: () => void;
+}) {
+  const [activeTab, setActiveTab] = useState<"signin" | "signup">(type);
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         handleClose();
       }
     };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   const handleClose = () => {
@@ -23,6 +30,26 @@ export default function Modal({ type = 'signin', onClose }: { type?: 'signin' | 
     setTimeout(() => {
       onClose();
     }, 300);
+  };
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      console.error(error.message);
+      setErrorMessage(error.message);
+    } else {
+      console.log("Connected!");
+      handleClose();
+    }
   };
 
   return createPortal(
@@ -57,25 +84,33 @@ export default function Modal({ type = 'signin', onClose }: { type?: 'signin' | 
             <div className="flex-1 p-8 flex flex-col">
               <div className="flex justify-between mb-8 border-b border-indigo-800 relative">
                 <button
-                  onClick={() => setActiveTab('signup')}
-                  className={`relative flex-1 py-2 text-center focus:outline-none ${activeTab === 'signup' ? 'text-white' : 'text-indigo-400'}`}
+                  onClick={() => setActiveTab("signup")}
+                  className={`relative flex-1 py-2 text-center focus:outline-none ${
+                    activeTab === "signup" ? "text-white" : "text-indigo-400"
+                  }`}
                 >
                   Sign Up
-                  {activeTab === 'signup' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-500" />}
+                  {activeTab === "signup" && (
+                    <span className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-500" />
+                  )}
                 </button>
                 <button
-                  onClick={() => setActiveTab('signin')}
-                  className={`relative flex-1 py-2 text-center focus:outline-none ${activeTab === 'signin' ? 'text-white' : 'text-indigo-400'}`}
+                  onClick={() => setActiveTab("signin")}
+                  className={`relative flex-1 py-2 text-center focus:outline-none ${
+                    activeTab === "signin" ? "text-white" : "text-indigo-400"
+                  }`}
                 >
                   Sign In
-                  {activeTab === 'signin' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-500" />}
+                  {activeTab === "signin" && (
+                    <span className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-500" />
+                  )}
                 </button>
               </div>
 
               <div className="flex-1 flex items-center justify-center">
                 <div className="w-full max-w-sm space-y-4">
                   <AnimatePresence mode="wait">
-                    {activeTab === 'signup' ? (
+                    {activeTab === "signup" ? (
                       <motion.form
                         key="signup"
                         initial={{ opacity: 0, y: 10 }}
@@ -84,11 +119,32 @@ export default function Modal({ type = 'signin', onClose }: { type?: 'signin' | 
                         transition={{ duration: 0.3 }}
                         className="space-y-4"
                       >
-                        <input type="text" placeholder="Username" className="w-full px-4 py-3 rounded-lg bg-gray-900 text-gray-100 border border-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                        <input type="email" placeholder="Email" className="w-full px-4 py-3 rounded-lg bg-gray-900 text-gray-100 border border-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                        <input type="password" placeholder="Password" className="w-full px-4 py-3 rounded-lg bg-gray-900 text-gray-100 border border-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                        <input type="password" placeholder="Confirm Password" className="w-full px-4 py-3 rounded-lg bg-gray-900 text-gray-100 border border-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                        <button type="submit" className="w-full py-3 bg-indigo-700 text-white rounded-lg hover:bg-indigo-800 transition">Create Account</button>
+                        <input
+                          type="text"
+                          placeholder="Username"
+                          className="w-full px-4 py-3 rounded-lg bg-gray-900 text-gray-100 border border-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                        <input
+                          type="email"
+                          placeholder="Email"
+                          className="w-full px-4 py-3 rounded-lg bg-gray-900 text-gray-100 border border-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                        <input
+                          type="password"
+                          placeholder="Password"
+                          className="w-full px-4 py-3 rounded-lg bg-gray-900 text-gray-100 border border-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                        <input
+                          type="password"
+                          placeholder="Confirm Password"
+                          className="w-full px-4 py-3 rounded-lg bg-gray-900 text-gray-100 border border-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                        <button
+                          type="submit"
+                          className="w-full py-3 bg-indigo-700 text-white rounded-lg hover:bg-indigo-800 transition"
+                        >
+                          Create Account
+                        </button>
                       </motion.form>
                     ) : (
                       <motion.form
@@ -99,16 +155,38 @@ export default function Modal({ type = 'signin', onClose }: { type?: 'signin' | 
                         transition={{ duration: 0.3 }}
                         className="space-y-4"
                       >
-                        <input type="email" placeholder="Email" className="w-full px-4 py-3 rounded-lg bg-gray-900 text-gray-100 border border-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                        <input type="password" placeholder="Password" className="w-full px-4 py-3 rounded-lg bg-gray-900 text-gray-100 border border-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                        <button type="submit" className="w-full py-3 bg-indigo-700 text-white rounded-lg hover:bg-indigo-800 transition">Log In</button>
+                        <input
+                          type="email"
+                          placeholder="Email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="w-full px-4 py-3 rounded-lg bg-gray-900 text-gray-100 border border-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                        <input
+                          type="password"
+                          placeholder="Password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="w-full px-4 py-3 rounded-lg bg-gray-900 text-gray-100 border border-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                        <button
+                          type="submit"
+                          className="w-full py-3 bg-indigo-700 text-white rounded-lg hover:bg-indigo-800 transition"
+                        >
+                          Log In
+                        </button>
                       </motion.form>
                     )}
                   </AnimatePresence>
                 </div>
               </div>
 
-              <button onClick={handleClose} className="absolute top-4 right-4 text-indigo-300 hover:text-white text-2xl">&times;</button>
+              <button
+                onClick={handleClose}
+                className="absolute top-4 right-4 text-indigo-300 hover:text-white text-2xl"
+              >
+                &times;
+              </button>
             </div>
           </motion.div>
         </motion.div>
