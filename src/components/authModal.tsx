@@ -1,63 +1,120 @@
-// ✅ Modal.tsx ajusté pour une hauteur fixe égale, quelle que soit la vue
-
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { createPortal } from 'react-dom';
+
 
 export default function Modal({ type = 'signin', onClose }: { type?: 'signin' | 'signup'; onClose: () => void }) {
   const [activeTab, setActiveTab] = useState<'signin' | 'signup'>(type);
+  const [isVisible, setIsVisible] = useState(true); // Pour contrôler le fade-out
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="relative w-full max-w-3xl bg-white rounded-lg shadow-lg overflow-hidden flex min-h-[500px]">
-        {/* Left side image */}
-        <div className="hidden md:block w-1/2 bg-indigo-900 text-white flex items-center justify-center p-4">
-          <p className="text-xl font-bold">🎮 Welcome to CS2 Trader</p>
-        </div>
+  // Gestion ESC pour fermer
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleClose();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
-        {/* Right side form */}
-        <div className="flex-1 p-8 flex flex-col">
-          {/* Switch buttons */}
-          <div className="flex justify-between mb-6">
-            <button
-              onClick={() => setActiveTab('signup')}
-              className={`flex-1 py-2 rounded-t ${activeTab === 'signup' ? 'bg-indigo-700 text-white' : 'bg-gray-200 text-gray-600'}`}
-            >
-              Sign Up
-            </button>
-            <button
-              onClick={() => setActiveTab('signin')}
-              className={`flex-1 py-2 rounded-t ${activeTab === 'signin' ? 'bg-indigo-700 text-white' : 'bg-gray-200 text-gray-600'}`}
-            >
-              Sign In
-            </button>
-          </div>
+  const handleClose = () => {
+    setIsVisible(false);
+    setTimeout(() => {
+      onClose();
+    }, 300); // correspond à la durée du exit
+  };
 
-          {/* Form content with fixed height */}
-          <div className="flex-1 flex items-center justify-center">
-            <div className="w-full max-w-sm">
-              {activeTab === 'signup' ? (
-                <form className="space-y-4">
-                  <input type="text" placeholder="Username" className="w-full p-3 border rounded" />
-                  <input type="email" placeholder="Email" className="w-full p-3 border rounded" />
-                  <input type="password" placeholder="Password" className="w-full p-3 border rounded" />
-                  <input type="password" placeholder="Confirm Password" className="w-full p-3 border rounded" />
-                  <button type="submit" className="w-full py-3 bg-indigo-700 text-white rounded hover:bg-indigo-800">Create Account</button>
-                </form>
-              ) : (
-                <form className="space-y-4">
-                  <input type="email" placeholder="Email" className="w-full p-3 border rounded" />
-                  <input type="password" placeholder="Password" className="w-full p-3 border rounded" />
-                  <button type="submit" className="w-full py-3 bg-indigo-700 text-white rounded hover:bg-indigo-800">Log In</button>
-                </form>
-              )}
+  return createPortal(
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          onClick={handleClose}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.3 }}
+            className="relative w-full max-w-3xl bg-gradient-to-br from-gray-950 via-indigo-950 to-purple-950 text-gray-100 rounded-lg shadow-xl overflow-hidden flex min-h-[500px]"
+            onClick={(e) => e.stopPropagation()} // évite fermeture en cliquant à l'intérieur
+          >
+            {/* Côté gauche */}
+            <div className="hidden md:block w-1/2 bg-indigo-900 text-white flex items-center justify-center p-4">
+              <p className="text-xl font-bold">🎮 Welcome to CS2 Trader</p>
             </div>
-          </div>
 
-          {/* Close button */}
-          <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-xl">&times;</button>
-        </div>
-      </div>
-    </div>
+            {/* Formulaire */}
+            <div className="flex-1 p-8 flex flex-col">
+              {/* Tabs */}
+              <div className="flex justify-between mb-8 border-b border-indigo-800 relative">
+                <button
+                  onClick={() => setActiveTab('signup')}
+                  className={`relative flex-1 py-2 text-center focus:outline-none ${activeTab === 'signup' ? 'text-white' : 'text-indigo-400'}`}
+                >
+                  Sign Up
+                  {activeTab === 'signup' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-500" />}
+                </button>
+                <button
+                  onClick={() => setActiveTab('signin')}
+                  className={`relative flex-1 py-2 text-center focus:outline-none ${activeTab === 'signin' ? 'text-white' : 'text-indigo-400'}`}
+                >
+                  Sign In
+                  {activeTab === 'signin' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-500" />}
+                </button>
+              </div>
+
+              {/* Form */}
+              <div className="flex-1 flex items-center justify-center">
+                <div className="w-full max-w-sm space-y-4">
+                  <AnimatePresence mode="wait">
+                    {activeTab === 'signup' ? (
+                      <motion.form
+                        key="signup"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.3 }}
+                        className="space-y-4"
+                      >
+                        <input type="text" placeholder="Username" className="w-full px-4 py-3 rounded-lg bg-gray-900 text-gray-100 border border-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                        <input type="email" placeholder="Email" className="w-full px-4 py-3 rounded-lg bg-gray-900 text-gray-100 border border-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                        <input type="password" placeholder="Password" className="w-full px-4 py-3 rounded-lg bg-gray-900 text-gray-100 border border-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                        <input type="password" placeholder="Confirm Password" className="w-full px-4 py-3 rounded-lg bg-gray-900 text-gray-100 border border-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                        <button type="submit" className="w-full py-3 bg-indigo-700 text-white rounded-lg hover:bg-indigo-800 transition">Create Account</button>
+                      </motion.form>
+                    ) : (
+                      <motion.form
+                        key="signin"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.3 }}
+                        className="space-y-4"
+                      >
+                        <input type="email" placeholder="Email" className="w-full px-4 py-3 rounded-lg bg-gray-900 text-gray-100 border border-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                        <input type="password" placeholder="Password" className="w-full px-4 py-3 rounded-lg bg-gray-900 text-gray-100 border border-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                        <button type="submit" className="w-full py-3 bg-indigo-700 text-white rounded-lg hover:bg-indigo-800 transition">Log In</button>
+                      </motion.form>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+
+              {/* Close button */}
+              <button onClick={handleClose} className="absolute top-4 right-4 text-indigo-300 hover:text-white text-2xl">&times;</button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>,
+    document.body
   );
 }
