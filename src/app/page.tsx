@@ -16,7 +16,6 @@ import "swiper/css/pagination";
 import "swiper/css/effect-fade";
 import { motion, AnimatePresence } from "framer-motion";
 import Modal from "../components/authModal";
-import ParticlesBackground from "../components/heroParticlesBackground";
 
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);

@@ -4,12 +4,10 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createPortal } from 'react-dom';
 
-
 export default function Modal({ type = 'signin', onClose }: { type?: 'signin' | 'signup'; onClose: () => void }) {
   const [activeTab, setActiveTab] = useState<'signin' | 'signup'>(type);
-  const [isVisible, setIsVisible] = useState(true); // Pour contrôler le fade-out
+  const [isVisible, setIsVisible] = useState(true);
 
-  // Gestion ESC pour fermer
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -24,7 +22,7 @@ export default function Modal({ type = 'signin', onClose }: { type?: 'signin' | 
     setIsVisible(false);
     setTimeout(() => {
       onClose();
-    }, 300); // correspond à la durée du exit
+    }, 300);
   };
 
   return createPortal(
@@ -44,16 +42,19 @@ export default function Modal({ type = 'signin', onClose }: { type?: 'signin' | 
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3 }}
             className="relative w-full max-w-3xl bg-gradient-to-br from-gray-950 via-indigo-950 to-purple-950 text-gray-100 rounded-lg shadow-xl overflow-hidden flex min-h-[500px]"
-            onClick={(e) => e.stopPropagation()} // évite fermeture en cliquant à l'intérieur
+            onClick={(e) => e.stopPropagation()}
           >
-            {/* Côté gauche */}
-            <div className="hidden md:block w-1/2 bg-indigo-900 text-white flex items-center justify-center p-4">
-              <p className="text-xl font-bold">🎮 Welcome to CS2 Trader</p>
+            {/* Côté gauche avec l'image */}
+            <div className="hidden md:block w-1/2">
+              <img
+                src="/auth-popup-image.png" // chemin depuis /public
+                alt="Auth illustration"
+                className="object-cover w-full h-full"
+              />
             </div>
 
             {/* Formulaire */}
             <div className="flex-1 p-8 flex flex-col">
-              {/* Tabs */}
               <div className="flex justify-between mb-8 border-b border-indigo-800 relative">
                 <button
                   onClick={() => setActiveTab('signup')}
@@ -71,7 +72,6 @@ export default function Modal({ type = 'signin', onClose }: { type?: 'signin' | 
                 </button>
               </div>
 
-              {/* Form */}
               <div className="flex-1 flex items-center justify-center">
                 <div className="w-full max-w-sm space-y-4">
                   <AnimatePresence mode="wait">
@@ -108,7 +108,6 @@ export default function Modal({ type = 'signin', onClose }: { type?: 'signin' | 
                 </div>
               </div>
 
-              {/* Close button */}
               <button onClick={handleClose} className="absolute top-4 right-4 text-indigo-300 hover:text-white text-2xl">&times;</button>
             </div>
           </motion.div>
